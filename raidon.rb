@@ -11,6 +11,32 @@ Mash = Hashie::Mash
 #"127.0.0.1", 8093
 #"127.0.0.1", 8094
 
+
+Test = Proc.new do
+  r = Raidon.new
+  result = JSON.parse r.map_reduce(JSMAP, JSRED, "test")
+  ap result
+end
+
+JSMAP = <<JS
+  function(riakObject) {
+    var m =  riakObject.values[0].data;
+    ary = [];
+
+    if (m != null) {
+      ary.push(m)
+    }
+    return ary;
+  }
+JS
+
+JSRED = <<JS
+  function(values, args) {
+    return [];
+  }
+JS
+
+
 class Raidon
   attr_accessor :db_uri
 
@@ -54,10 +80,7 @@ class Raidon
     uri = self.key_uri(key)
 
     res = RestClient.get(uri)
-    vclock = res.headers[:x_riak_vclock]
-    mres = self.mash_it_up(res.body)
-    mres.x_riak_vclock = vclock
-    mres
+    res = assign_vclock(res)
   end
 
   def set_key(key, value)
@@ -107,16 +130,32 @@ class Raidon
     uri
   end
 
-  def map_reduce(js, bucket)
+  def assign_vclock(res)
+    vclock = res.headers[:x_riak_vclock]
+    mres = self.mash_it_up(res.body)
+    mres.x_riak_vclock = vclock
+    mres
+  end
+
+  def map_reduce(map, reduce, bucket)
     json = {
       :inputs => bucket,
-      :query => [{:map => {:language => "javascript", :source => "#{js}" }}]
+      :query => [
+        {:map => {:language => "javascript", :source => "#{map}" }},
+        {:reduce => {:language => "javascript", :source => "#{reduce}" }}
+      ]
     }.to_json
 
     uri = self.db_uri
-    mapred_uri = "http://#{uri.host}:#{path}/mapred"
+    mapred_uri = "http://#{uri.host}:#{uri.port}/mapred"
 
     RestClient.post(mapred_uri, json, :content_type => :json)
   end
 
+  def r_map (map, bucket)
+  end
+
+  def r_reduce(reduce, bucket)
+
+  end
 end
