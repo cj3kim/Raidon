@@ -15,7 +15,7 @@ class Raidon
   attr_accessor :db_uri
 
   def initialize(scheme="", host="", port="", path="", query="")
-    #TODO for ease of test purposes
+    #TODO For ease of testing in irb. Create a proc to do it for you.
     if scheme == "" && host == "" && port == ""
       self.db_uri = URI.parse("http://127.0.0.1:8091/riak/test?returnbody=true")
     else
@@ -106,6 +106,18 @@ class Raidon
     path = self.pathify
     path[2] = ""
     self.db_uri.path = self.stringify(path)
+  end
+
+  def map_reduce(js, bucket)
+    json = {
+      :inputs => bucket,
+      :query => [{:map => {:language => "javascript", :source => "#{js}" }}]
+    }.to_json
+
+    uri = self.db_uri
+    mapred_uri = "http://#{uri.host}:#{path}/mapred"
+
+    RestClient.post(mapred_uri, json, :content_type => :json)
   end
 
 end
