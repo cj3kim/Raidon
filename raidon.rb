@@ -51,9 +51,7 @@ class Raidon
   end
 
   def get_key(key)
-    self.db_uri.path << "/#{key}"
-    uri = self.db_uri.to_s
-    self.keyless_path
+    uri = self.key_uri(key)
 
     res = RestClient.get(uri)
     vclock = res.headers[:x_riak_vclock]
@@ -63,9 +61,7 @@ class Raidon
   end
 
   def set_key(key, value)
-    self.db_uri.path << "/#{key}"
-    uri = self.db_uri.to_s
-    self.keyless_path
+    uri = self.key_uri(key)
 
     RestClient.post(
       uri,
@@ -75,13 +71,9 @@ class Raidon
   end
 
   def delete_key(key)
-    self.db_uri.path << "/#{key}"
-
-    uri = self.db_uri.to_s
+    uri = self.key_uri(key)
 
     RestClient.delete(uri)
-
-    self.keyless_path
   end
 
   def mash_it_up(elem)
@@ -106,6 +98,13 @@ class Raidon
     path = self.pathify
     path[2] = ""
     self.db_uri.path = self.stringify(path)
+  end
+
+  def key_uri(key)
+    self.db_uri.path << "/#{key}"
+    uri = self.db_uri.to_s
+    self.keyless_path
+    uri
   end
 
   def map_reduce(js, bucket)
