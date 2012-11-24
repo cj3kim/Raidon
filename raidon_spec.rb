@@ -44,8 +44,8 @@ describe "Raidon" do
       hash = { :key => "value" }
       json = hash.to_json
 
-      r_instance.mash_it_up(json).should == Mash.new(JSON.parse(json))
-      r_instance.mash_it_up(hash).should == Mash.new(hash)
+      r_instance.mash_it_up(json).should == Hashie::Mash.new(JSON.parse(json))
+      r_instance.mash_it_up(hash).should == Hashie::Mash.new(hash)
     end
   end
 
