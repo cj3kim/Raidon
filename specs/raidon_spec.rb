@@ -1,4 +1,4 @@
-require_relative "./raidon"
+require_relative "../lib/raidon"
 
 #y = "Hello. I'm tired".match(/(\w*\'\w*)|\w*/g)^
 [

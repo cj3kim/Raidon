@@ -3,7 +3,7 @@ require "net/http"
 require "json"
 require "hashie"
 require 'awesome_print'
-require_relative './helpers'
+require_relative './raidon/helpers'
 
 
 #"127.0.0.1", 8091
@@ -21,7 +21,7 @@ end
 
 TEST2 = Proc.new do
   r = Raidon.new
-  result = r.r_map(JSMAP, "test")
+  result = r.r_map(JSMAP, "gmail")
   ap result
   result
 end
@@ -40,7 +40,9 @@ JSMAP = <<JS
     if (m.match(/:/g) == null) {
       ary.push(m)
     } else {
-      ary.push(JSON.parse(m));
+      hash = JSON.parse(m)
+      hash.key = riakObject.key
+      ary.push(hash)
     }
     return ary;
   }
@@ -88,12 +90,12 @@ class Raidon
     res = assign_vclock(res)
   end
 
-  def set_key(key, value)
-    uri = self.key_uri(key)
+  def set_key(key, value, key_id="")
+    uri = self.key_uri(key_id)
 
     RestClient.post(
       uri,
-      {key => value }.to_json,
+      { key => value }.to_json,
       :content_type => :json
     )
   end
