@@ -1,5 +1,19 @@
 require_relative "./raidon"
 
+#y = "Hello. I'm tired".match(/(\w*\'\w*)|\w*/g)^
+[
+  {
+    "metadata" => {
+                       "Links" => [],
+                 "X-Riak-VTag" => "6Gwt6DrhRPSESYqpBrFK0L",
+                "content-type" => "application/json",
+                       "index" => [],
+        "X-Riak-Last-Modified" => "Fri, 23 Nov 2012 06:54:54 GMT",
+                 "X-Riak-Meta" => []
+  }, "data" => "{\"key\":\"value\"}"
+  }
+]
+
 describe "Raidon" do
 
   let!(:r_instance) do

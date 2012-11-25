@@ -12,9 +12,23 @@ require_relative './helpers'
 #"127.0.0.1", 8094
 
 
-Test = Proc.new do
+TEST = Proc.new do
   r = Raidon.new
   result = JSON.parse r.map_reduce(JSMAP, JSRED, "test")
+  ap result
+  result
+end
+
+TEST2 = Proc.new do
+  r = Raidon.new
+  result = r.r_map(JSMAP, "test")
+  ap result
+  result
+end
+
+TEST3 = Proc.new do
+  r = Raidon.new
+  result = r.r_reduce(JSRED, "test")
   ap result
 end
 
@@ -23,16 +37,26 @@ JSMAP = <<JS
     var m =  riakObject.values[0].data;
     ary = [];
 
-    if (m != null) {
+    if (m.match(/:/g) == null) {
       ary.push(m)
+    } else {
+      ary.push(JSON.parse(m));
     }
     return ary;
   }
 JS
 
 JSRED = <<JS
-  function(values, args) {
-    return [];
+ function reducey(values) {
+    var key, val;
+    var str = "";
+
+    for(val in values) {
+      if (values[val].constructor == String) {
+        str += values[val];
+      }
+    }
+    return [str];
   }
 JS
 
@@ -89,6 +113,8 @@ class Raidon
       ]
     }.to_json
 
+    ap reduce
+
     RestClient.post(self.mapred_uri, json, :content_type => :json)
   end
 
@@ -100,7 +126,8 @@ class Raidon
       ]
     }.to_json
 
-    RestClient.post(self.mapred_uri, json, :content_type => :json)
+    JSON.parse RestClient.post(self.mapred_uri, json, :content_type => :json)
+
   end
 
   def r_reduce(reduce, bucket)
@@ -111,6 +138,6 @@ class Raidon
       ]
     }.to_json
 
-    RestClient.post(self.mapred_uri, json, :content_type => :json)
+    JSON.parse RestClient.post(self.mapred_uri, json, :content_type => :json)
   end
 end
